@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  loginDocker:
+  login_push_docker:
     runs-on: ubuntu-latest
     steps:
       -
@@ -17,11 +17,6 @@ jobs:
           registry: ${{ secrets.DOCKER_REGISTRY_URL }}
           username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-
-  build:
-    runs-on: ubuntu-latest
-    needs: loginDocker
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag proxgy.azurecr.io/mqtt-broker-vernemq:latest && docker push proxgy.azurecr.io/mqtt-broker-vernemq:latest
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag proxgy.azurecr.io/mqtt-broker-vernemq:latest && docker push proxgy.azurecr.io/mqtt-broker-vernemq:latest
