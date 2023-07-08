@@ -1,0 +1,26 @@
+version: '3.3'
+services:
+    vernemq:
+        image: proxgy.azurecr.io/mqtt-broker-vernemq:latest
+        ports:
+            - '1883:1883'
+            - '8888:8888'
+        environment:
+            - 'LISTENER_TCP_DEFAULT=0.0.0.0:1883'
+            - 'DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT__ALLOWED_PROTOCOL_VERSIONS=3,4,5'
+            - 'DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5'
+            - DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT__MAX_CONNECTIONS=200000
+            - DOCKER_VERNEMQ_ACCEPT_EULA=yes
+            - DOCKER_VERNEMQ_ALLOW_ANONYMOUS=off
+            - SHARED_SUBSCRIPTION_POLICY=prefer_local
+            - DOCKER_VERNEMQ_VMQ_WEBHOOKS__POOL_timeout=6000
+            - DOCKER_VERNEMQ_VMQ_WEBHOOKS.pool_timeout=60000
+            - DOCKER_VERNEMQ_LOG__CONSOLE=both
+            - DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL=debug
+            - LOG_CONSOLE_FILE=/opt/scats/log/vernemq.log
+            - LOG_ERROR_FILE=/opt/scats/log/vernemq_error.log
+            - DOCKER_VERNEMQ_VMQ_PASSWD__PASSWORD_FILE=/etc/vernemq/vmq.passwd
+            - DOCKER_VERNEMQ_VMQ_PASSWD__PASSWORD_RELOAD_INTERVAL=10
+            - DOCKER_VERNEMQ_VMQ_ACL=off
+
+        
