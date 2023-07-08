@@ -2,7 +2,9 @@ version: '3.3'
 services:
     vernemq:
         image: proxgy.azurecr.io/mqtt-broker-vernemq:latest
-        ports:
+        depends_on:
+            - auth_db
+        ports:  
             - '1883:1883'
             - '8888:8888'
         environment:
@@ -19,8 +21,37 @@ services:
             - DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL=debug
             - LOG_CONSOLE_FILE=/opt/scats/log/vernemq.log
             - LOG_ERROR_FILE=/opt/scats/log/vernemq_error.log
-            - DOCKER_VERNEMQ_VMQ_PASSWD__PASSWORD_FILE=/etc/vernemq/vmq.passwd
-            - DOCKER_VERNEMQ_VMQ_PASSWD__PASSWORD_RELOAD_INTERVAL=10
-            - DOCKER_VERNEMQ_VMQ_ACL=off
+            - DOCKER_VERNEMQ_PLUGINS__VMQ_DIVERSITY=on
+            - DOCKER_VERNEMQ_PLUGINS__VMQ_ACL=off
+            - DOCKER_VERNEMQ_PLUGINS__VMQ_PASSWD=off
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__AUTH_POSTGRES__ENABLED=on
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__HOST=auth_db
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__PORT=5432
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__USER=postgres
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__PASSWORD=password
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__DATABASE=postgres
+            - DOCKER_VERNEMQ_VMQ_DIVERSITY__POSTGRES__PASSWORD_HASH_METHOD=crypt
 
-        
+
+    auth_db:
+        image: postgres:latest
+        container_name: vernemq_auth_db
+        environment:
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_USER=postgres
+        - POSTGRES_DB=postgres
+        volumes:
+        - ./auth_db/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+        ports:
+        - 5432:5432
+        expose:
+        - 5432
+
+
+# docker run -p 80:80 \
+#     -e 'PGADMIN_DEFAULT_EMAIL=saurabhshandilya@proxgy.com' \
+#     -e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
+#     -e 'PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True' \
+#     -e 'PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"' \
+#     -e 'PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10' \
+#     -d dpage/pgadmin4

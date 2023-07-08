@@ -36,6 +36,10 @@ For more information, check out the Helm chart [README](helm/vernemq/README.md).
 
 ### 3. Using pure Docker commands
 
+prefix any env var with DOCKER_VERNEMQ_
+replace any . in the canonical format with __ (2 underscores)
+but don’t substitute any _ that is part of the variable name, as in ALLOW_ANONYMOUS
+
     docker run -e "DOCKER_VERNEMQ_ACCEPT_EULA=yes" --name vernemq1 -d vernemq/vernemq
 
 Sometimes you need to configure a forwarding for ports (on a Mac for example):
