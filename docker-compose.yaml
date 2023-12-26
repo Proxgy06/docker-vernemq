@@ -1,5 +1,15 @@
 version: '3.3'
 services:
+
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        ports:
+        - "80:80"
+        - "443:443"
+        volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
     vernemq:
         image: proxgy.azurecr.io/mqtt-broker-vernemq:latest
         depends_on:
@@ -7,8 +17,12 @@ services:
         ports:  
             - '1883:1883'
             - '8888:8888'
+            - '9000:9000'
         environment:
             - 'LISTENER_TCP_DEFAULT=0.0.0.0:1883'
+            - 'DOCKER_VERNEMQ_LISTENER__WS__DEFAULT=0.0.0.0:9000'
+            - 'DOCKER_VERNEMQ_LISTENER__HTTP__DEFAULT__HTTP_MODULES=vmq_mgmt_http,vmq_health_http,vmq_metrics_http, vmq_mgmt_http'
+            - 'LISTENER_HTTP_DEFAULT=0.0.0.0:8888'
             - 'DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT__ALLOWED_PROTOCOL_VERSIONS=3,4,5'
             - 'DOCKER_VERNEMQ_LISTENER__TCP__ALLOWED_PROTOCOL_VERSIONS=3,4,5'
             - DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT__MAX_CONNECTIONS=200000
@@ -37,21 +51,25 @@ services:
         image: postgres:latest
         container_name: vernemq_auth_db
         environment:
-        - POSTGRES_PASSWORD=password
-        - POSTGRES_USER=postgres
-        - POSTGRES_DB=postgres
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=postgres
         volumes:
-        - ./auth_db/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+            - ./auth_db/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
         ports:
         - 5432:5432
-        expose:
-        - 5432
+
+    # pgadmin:
+    #     image: dpage/pgadmin4
+    #     container_name: pgadmin_container
+    #     ports:
+    #     - "8080:80"
+    #     environment:
+    #         - PGADMIN_DEFAULT_EMAIL=saurabhshandilya@proxgy.com
+    #         - PGADMIN_DEFAULT_PASSWORD=postgres
+    #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
+    #         - PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"
+    #         - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10
 
 
-# docker run -p 80:80 \
-#     -e 'PGADMIN_DEFAULT_EMAIL=saurabhshandilya@proxgy.com' \
-#     -e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
-#     -e 'PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True' \
-#     -e 'PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"' \
-#     -e 'PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10' \
-#     -d dpage/pgadmin4
+# docker run -p 80:80 -e 'PGADMIN_DEFAULT_EMAIL=postgres' -e 'PGADMIN_DEFAULT_PASSWORD=postgres' -e 'PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True' -e 'PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"' -e 'PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10' -d dpage/pgadmin4
